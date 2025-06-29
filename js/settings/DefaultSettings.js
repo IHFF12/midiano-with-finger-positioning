@@ -241,14 +241,21 @@ const defaultSettings = {
 				step: 0.5,
 				onChange: value => setSetting("strokeNotesWidth", value)
 			},
-			{
-				type: "checkbox",
-				id: "roundedNotes",
-				label: "Rounded notes",
-				value: true,
-				onChange: ev => setSetting("roundedNotes", ev.target.checked)
-			},
-			//TODO fix getAlphaFromY in Noterender.
+                        {
+                                type: "checkbox",
+                                id: "roundedNotes",
+                                label: "Rounded notes",
+                                value: true,
+                                onChange: ev => setSetting("roundedNotes", ev.target.checked)
+                        },
+                        {
+                                type: "checkbox",
+                                id: "showNoteLabels",
+                                label: "Show note labels",
+                                value: true,
+                                onChange: ev => setSetting("showNoteLabels", ev.target.checked)
+                        },
+                        //TODO fix getAlphaFromY in Noterender.
 			// {
 			// 	type: "checkbox",
 			// 	id: "fadeInNotes",
