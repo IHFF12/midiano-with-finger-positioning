@@ -1,5 +1,6 @@
 import { getSetting, setSettingCallback } from "../settings/Settings.js"
 import { drawRoundRect } from "../Util.js"
+import { CONST } from "../data/CONST.js"
 import { NoteParticleRender } from "./NoteParticleRender.js"
 import { PianoParticleRender } from "./PianoParticleRender.js"
 
@@ -213,20 +214,22 @@ export class NoteRender {
 			? playedWhiteNotes[0].fillStyle
 			: ""
 
-		playedWhiteNotes.forEach(renderInfo => {
-			this.drawNoteAfter(renderInfo)
-			this.ctx.fill()
-			this.strokeActiveAndOthers(renderInfo)
-		})
+                playedWhiteNotes.forEach(renderInfo => {
+                        this.drawNoteAfter(renderInfo)
+                        this.ctx.fill()
+                        this.strokeActiveAndOthers(renderInfo)
+                        this.drawNoteLabel(renderInfo)
+                })
 
 		this.ctx.fillStyle = playedBlackNotes.length
 			? playedBlackNotes[0].fillStyle
 			: ""
-		playedBlackNotes.forEach(renderInfo => {
-			this.drawNoteAfter(renderInfo)
-			this.ctx.fill()
-			this.strokeActiveAndOthers(renderInfo)
-		})
+                playedBlackNotes.forEach(renderInfo => {
+                        this.drawNoteAfter(renderInfo)
+                        this.ctx.fill()
+                        this.strokeActiveAndOthers(renderInfo)
+                        this.drawNoteLabel(renderInfo)
+                })
 
 		this.ctx.restore()
 	}
@@ -254,20 +257,22 @@ export class NoteRender {
 		this.ctx.fillStyle = incomingWhiteNotes.length
 			? incomingWhiteNotes[0].fillStyle
 			: ""
-		incomingWhiteNotes.forEach(renderInfo => {
-			this.drawNoteBefore(renderInfo)
-			this.ctx.fill()
-			this.strokeActiveAndOthers(renderInfo)
-		})
+                incomingWhiteNotes.forEach(renderInfo => {
+                        this.drawNoteBefore(renderInfo)
+                        this.ctx.fill()
+                        this.strokeActiveAndOthers(renderInfo)
+                        this.drawNoteLabel(renderInfo)
+                })
 
 		this.ctx.fillStyle = incomingBlackNotes.length
 			? incomingBlackNotes[0].fillStyle
 			: ""
-		incomingBlackNotes.forEach(renderInfo => {
-			this.drawNoteBefore(renderInfo)
-			this.ctx.fill()
-			this.strokeActiveAndOthers(renderInfo)
-		})
+                incomingBlackNotes.forEach(renderInfo => {
+                        this.drawNoteBefore(renderInfo)
+                        this.ctx.fill()
+                        this.strokeActiveAndOthers(renderInfo)
+                        this.drawNoteLabel(renderInfo)
+                })
 		this.ctx.restore()
 	}
 
@@ -310,20 +315,22 @@ export class NoteRender {
 		this.ctx.lineWidth = getSetting("strokeNotesWidth")
 		this.ctx.fillStyle = getSetting("inputNoteColor")
 		let whiteActive = inputActiveNotes.filter(noteInfo => !noteInfo.isBlack)
-		inputActiveNotes.forEach(noteInfo => {
-			this.createNoteParticle(noteInfo)
-			this.pianoRender.drawActiveInputKey(
-				parseInt(noteInfo.noteNumber),
-				this.ctx.fillStyle
-			)
-			this.drawNoteAfter(noteInfo)
-			this.ctx.fill()
-		})
-		inputPlayedNotes.forEach(noteInfo => {
-			// noteInfo.y += this.renderDimensions.whiteKeyHeight
-			this.drawNoteAfter(noteInfo)
-			this.ctx.fill()
-		})
+                inputActiveNotes.forEach(noteInfo => {
+                        this.createNoteParticle(noteInfo)
+                        this.pianoRender.drawActiveInputKey(
+                                parseInt(noteInfo.noteNumber),
+                                this.ctx.fillStyle
+                        )
+                        this.drawNoteAfter(noteInfo)
+                        this.ctx.fill()
+                        this.drawNoteLabel(noteInfo)
+                })
+                inputPlayedNotes.forEach(noteInfo => {
+                        // noteInfo.y += this.renderDimensions.whiteKeyHeight
+                        this.drawNoteAfter(noteInfo)
+                        this.ctx.fill()
+                        this.drawNoteLabel(noteInfo)
+                })
 	}
 	drawNote(renderInfos) {
 		let ctx = this.ctx
@@ -415,36 +422,86 @@ export class NoteRender {
 		}
 	}
 
-	doNotePath(renderInfo, overWriteParams) {
-		if (!overWriteParams) {
-			overWriteParams = {}
-		}
-		for (let key in renderInfo) {
-			if (!overWriteParams.hasOwnProperty(key)) {
-				overWriteParams[key] = renderInfo[key]
-			}
-		}
-		if (getSetting("roundedNotes") || getSetting("noteBorderRadius") > 0) {
-			drawRoundRect(
-				this.ctx,
-				overWriteParams.x,
-				overWriteParams.y,
-				overWriteParams.w,
-				overWriteParams.h,
-				overWriteParams.rad,
-				getSetting("roundedNotes")
-			)
-		} else {
-			this.ctx.beginPath()
-			this.ctx.rect(
-				overWriteParams.x,
-				overWriteParams.y,
-				overWriteParams.w,
-				overWriteParams.h
-			)
-			this.ctx.closePath()
-		}
-	}
+        doNotePath(renderInfo, overWriteParams) {
+                if (!overWriteParams) {
+                        overWriteParams = {}
+                }
+                for (let key in renderInfo) {
+                        if (!overWriteParams.hasOwnProperty(key)) {
+                                overWriteParams[key] = renderInfo[key]
+                        }
+                }
+                if (getSetting("roundedNotes") || getSetting("noteBorderRadius") > 0) {
+                        drawRoundRect(
+                                this.ctx,
+                                overWriteParams.x,
+                                overWriteParams.y,
+                                overWriteParams.w,
+                                overWriteParams.h,
+                                overWriteParams.rad,
+                                getSetting("roundedNotes")
+                        )
+                } else {
+                        this.ctx.beginPath()
+                        this.ctx.rect(
+                                overWriteParams.x,
+                                overWriteParams.y,
+                                overWriteParams.w,
+                                overWriteParams.h
+                        )
+                        this.ctx.closePath()
+                }
+        }
+
+        drawNoteLabel(renderInfo) {
+                if (!getSetting("showNoteLabels")) {
+                        return
+                }
+                const key = this.pianoRender.getDisplayKey(
+                        CONST.MIDI_NOTE_TO_KEY[renderInfo.noteNumber + 21] || ""
+                )
+                if (!key) {
+                        return
+                }
+                const fontSize = Math.floor(renderInfo.w * 0.6)
+                if (fontSize <= 0) {
+                        return
+                }
+                this.ctx.font = `${fontSize}px Arial`
+                this.ctx.textBaseline = "middle"
+                this.ctx.fillStyle = this.getContrastColor(renderInfo.fillStyle)
+                const txtWidth = this.ctx.measureText(key).width
+                const x = renderInfo.x + renderInfo.w / 2 - txtWidth / 2
+                const y = renderInfo.y + renderInfo.h / 2
+                this.ctx.fillText(key, x, y)
+        }
+
+        getContrastColor(color) {
+                let r = 0,
+                        g = 0,
+                        b = 0
+                if (color.startsWith("#")) {
+                        const hex = color.substring(1)
+                        if (hex.length === 3) {
+                                r = parseInt(hex[0] + hex[0], 16)
+                                g = parseInt(hex[1] + hex[1], 16)
+                                b = parseInt(hex[2] + hex[2], 16)
+                        } else if (hex.length >= 6) {
+                                r = parseInt(hex.substr(0, 2), 16)
+                                g = parseInt(hex.substr(2, 2), 16)
+                                b = parseInt(hex.substr(4, 2), 16)
+                        }
+                } else if (color.startsWith("rgba") || color.startsWith("rgb")) {
+                        let parts = color
+                                .replace(/rgba?\(|\)/g, "")
+                                .split(/,\s*/)
+                        r = parseFloat(parts[0])
+                        g = parseFloat(parts[1])
+                        b = parseFloat(parts[2])
+                }
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000
+                return brightness > 125 ? "black" : "white"
+        }
 
 	createNoteParticles(activeNotes, colWhite, colBlack) {
 		if (getSetting("showParticlesTop") || getSetting("showParticlesBottom")) {
