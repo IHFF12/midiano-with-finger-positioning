@@ -467,6 +467,7 @@ export class NoteRender {
                 if (fontSize <= 0) {
                         return
                 }
+          
                 this.ctx.save()
                 this.ctx.font = `${fontSize}px Arial`
                 this.ctx.textBaseline = "middle"
@@ -476,6 +477,7 @@ export class NoteRender {
                 const y = renderInfo.y + renderInfo.h / 2
                 this.ctx.fillText(key, x, y)
                 this.ctx.restore()
+
         }
 
         getContrastColor(color) {
